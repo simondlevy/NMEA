@@ -1,6 +1,8 @@
 /*
 NMEA.h: C++ header for for NMEA parsing library
 
+For NMEA protocol see http://aprs.gids.nl/nmea/ 
+
 Copyright (C) Simon D. Levy 2015
 
 This code is free software: you can redistribute it and/or modify

@@ -1,5 +1,5 @@
 # NMEA
-NMEA parsing in C++ with Arduino examples.
+NMEA parsing in C++ with Arduino example.
 
 Currently supports the following NMEA messages:
 

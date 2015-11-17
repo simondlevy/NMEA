@@ -319,6 +319,7 @@ GPRMC_Message::GPRMC_Message(char * msg) : NMEA_Message(msg) {
 }
 
 GPRMC_Message::GPRMC_Message(
+        /*
             Time time,
             char warning,
             Coordinate latitude,
@@ -326,8 +327,9 @@ GPRMC_Message::GPRMC_Message(
             float groundspeedKnots,
             float trackAngle,
             Date date,
-            float magvar) {
+            float magvar*/) {
 
+    /*
     this->time = time;
     this->warning = warning;
     this->latitude = latitude; 
@@ -336,6 +338,7 @@ GPRMC_Message::GPRMC_Message(
     this->trackAngle = trackAngle;
     this->date = date;
     this->magvar = magvar;
+    */
 }
 
 void GPRMC_Message::generate(char * msg) {

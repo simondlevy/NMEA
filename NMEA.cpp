@@ -318,32 +318,9 @@ GPRMC_Message::GPRMC_Message(char * msg) : NMEA_Message(msg) {
     }
 }
 
-GPRMC_Message::GPRMC_Message(
-        /*
-            Time time,
-            char warning,
-            Coordinate latitude,
-            Coordinate longitude,
-            float groundspeedKnots,
-            float trackAngle,
-            Date date,
-            float magvar*/) {
+void GPRMC_Message::generate(char * msg, float latitude, float longitude) {
 
-    /*
-    this->time = time;
-    this->warning = warning;
-    this->latitude = latitude; 
-    this->longitude = longitude;
-    this->groundspeedKnots = groundspeedKnots;
-    this->trackAngle = trackAngle;
-    this->date = date;
-    this->magvar = magvar;
-    */
-}
-
-void GPRMC_Message::generate(char * msg) {
-
-    strcpy(msg, "$GPRMC,170954,A,3747.%03d,N,07926.546,W,0,0,161115,,,A*66");
+    strcpy(msg, "$GPRMC,170954,A,3747.000,N,07926.546,W,0,0,161115,,,A*66");
 }
  
 GPVTG_Message::GPVTG_Message(char * msg) : NMEA_Message(msg) {

@@ -178,19 +178,7 @@ class GPRMC_Message : public NMEA_Message {
 
         GPRMC_Message(char * msg);
 
-        GPRMC_Message(
-                /*
-            Time time,
-            char warning,
-            Coordinate latitude,
-            Coordinate longitude,
-            float groundspeedKnots,
-            float trackAngle,
-            Date date,
-            float magvar
-            */);
-
-        void generate(char * msg);
+        static void generate(char * msg, float latitude, float longitude);
 };
 
 class GPVTG_Message : public NMEA_Message {

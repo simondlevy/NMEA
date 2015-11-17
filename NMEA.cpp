@@ -342,6 +342,8 @@ GPRMC_Message::GPRMC_Message(
 }
 
 void GPRMC_Message::generate(char * msg) {
+
+    strcpy(msg, "$GPRMC,170954,A,3747.%03d,N,07926.546,W,0,0,161115,,,A*66");
 }
  
 GPVTG_Message::GPVTG_Message(char * msg) : NMEA_Message(msg) {

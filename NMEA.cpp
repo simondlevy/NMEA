@@ -318,9 +318,21 @@ GPRMC_Message::GPRMC_Message(char * msg) : NMEA_Message(msg) {
     }
 }
 
+static char coord2str(float coord, char * str) {
+
+    int intdeg = coord;
+    float minutes = (coord-intdeg)*60;
+    int intmin = minutes;
+    int fracmin = 1000 * (minutes - intmin);
+    sprintf(str, "%d%02d.%04d", intdeg, intmin, fracmin);
+}
+
 void GPRMC_Message::generate(char * msg, float latitude, float longitude) {
 
-    strcpy(msg, "$GPRMC,170954,A,3747.000,N,07926.546,W,0,0,161115,,,A*66");
+    char latstr[20];
+    coord2str(latitude, latstr);
+    sprintf(msg, "$GPRMC,170954,A,%s,N,07926.546,W,0,0,161115,,,A*66", latstr);
+    //strcpy(msg, "$GPRMC,170954,A,3747.000,N,07926.546,W,0,0,161115,,,A*66");
 }
  
 GPVTG_Message::GPVTG_Message(char * msg) : NMEA_Message(msg) {

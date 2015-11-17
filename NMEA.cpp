@@ -222,6 +222,9 @@ NMEA_Message::NMEA_Message(char * msg) {
     strcpy(this->debug, msg);
 }
 
+NMEA_Message::NMEA_Message() {
+}
+
 void NMEA_Message::dump() {
 
     for (int k=0; k<this->nparts; ++k) {
@@ -315,6 +318,29 @@ GPRMC_Message::GPRMC_Message(char * msg) : NMEA_Message(msg) {
     }
 }
 
+GPRMC_Message::GPRMC_Message(
+            Time time,
+            char warning,
+            Coordinate latitude,
+            Coordinate longitude,
+            float groundspeedKnots,
+            float trackAngle,
+            Date date,
+            float magvar) {
+
+    this->time = time;
+    this->warning = warning;
+    this->latitude = latitude; 
+    this->longitude = longitude;
+    this->groundspeedKnots = groundspeedKnots;
+    this->trackAngle = trackAngle;
+    this->date = date;
+    this->magvar = magvar;
+}
+
+void GPRMC_Message::generate(char * msg) {
+}
+ 
 GPVTG_Message::GPVTG_Message(char * msg) : NMEA_Message(msg) {
 
         this->trackMadeGoodTrue = safeFloat(1);

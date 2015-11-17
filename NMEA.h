@@ -89,6 +89,8 @@ class NMEA_Message {
 
         float safeFloat(int pos);
 
+        NMEA_Message();
+
      public:
 
         char debug[100];
@@ -96,6 +98,7 @@ class NMEA_Message {
         void dump();
 
         NMEA_Message(char * msg);
+
 };
 
 
@@ -174,6 +177,18 @@ class GPRMC_Message : public NMEA_Message {
         float magvar;
 
         GPRMC_Message(char * msg);
+
+        GPRMC_Message(
+            Time time,
+            char warning,
+            Coordinate latitude,
+            Coordinate longitude,
+            float groundspeedKnots,
+            float trackAngle,
+            Date date,
+            float magvar);
+
+        void generate(char * msg);
 };
 
 class GPVTG_Message : public NMEA_Message {

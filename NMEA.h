@@ -23,26 +23,6 @@
 #include <math.h>
 
 
-static char * nexttok() {
-
-    return strtok(NULL, ",");
-}
-
-static int twodig(char * p, int k) {
-
-    return 10 * (p[k]-'0') + (p[k+1]-'0');
-}
-
-static char coord2str(float coord, char * str, const char * fmt) {
-
-    coord = abs(coord);
-    int intdeg = coord;
-    float minutes = (coord-intdeg)*60;
-    int intmin = minutes;
-    int fracmin = 1000 * (minutes - intmin);
-    sprintf(str, fmt, intdeg, intmin, fracmin);
-}
-
 
 class Time {
 
@@ -160,6 +140,16 @@ class NMEA_Message {
             return available(pos) ? makeFloat(pos) : -1;
         }
 
+        static char coord2str(float coord, char * str, const char * fmt) {
+
+            coord = abs(coord);
+            int intdeg = coord;
+            float minutes = (coord-intdeg)*60;
+            int intmin = minutes;
+            int fracmin = 1000 * (minutes - intmin);
+            sprintf(str, fmt, intdeg, intmin, fracmin);
+        }
+
         NMEA_Message(char * msg) {
 
             this->nparts = 0; 
@@ -218,6 +208,12 @@ class NMEA_Message {
         }
 
     private:
+
+       static int twodig(char * p, int k) {
+
+            return 10 * (p[k]-'0') + (p[k+1]-'0');
+        }
+
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)|| defined(__AVR_ATmega2560__)
 #include <Arduino.h>
         static void print(char * s) {

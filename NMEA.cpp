@@ -355,7 +355,7 @@ void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
     coord2str(longitude, lonstr, "%03d%02d.%04d");
 
     char tmp[200];
-    sprintf(tmp, "GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A*66", 
+    sprintf(tmp, "GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A", 
             latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W');
     make_nmea(tmp, msg);
 }

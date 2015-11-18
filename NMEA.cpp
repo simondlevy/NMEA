@@ -336,19 +336,14 @@ GPVTG_Message::GPVTG_Message(char * msg) : NMEA_Message(msg) {
         this->speedKPH = safeFloat(7);
 }
 
-void GPGGA_Message::serialize(char * msg, float latitude, float longitude, float altitude) {
+static void make_nmea(char * in, char *out) {
 
-    char latstr[20];
-    coord2str(latitude, latstr, "%d%02d.%04d");
+    char chk = 0;
 
-    char lonstr[20];
-    coord2str(longitude, lonstr, "%03d%02d.%04d");
+    for (char * p = in; *p; p++)
+        chk ^= *p;
 
-    int intalt = (int)altitude;
-    int fracalt = 100 * (altitude - intalt);
-
-    sprintf(msg, "$GPGGA,170954,%s,%c,%s,%c,1,7,1.5,%d.%2d,M,0,M,,*", 
-            latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W', intalt, fracalt);
+    sprintf(out, "$%s*%02X\r", in, chk);
 }
 
 void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
@@ -359,8 +354,10 @@ void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
     char lonstr[20];
     coord2str(longitude, lonstr, "%03d%02d.%04d");
 
-    sprintf(msg, "$GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A*66", 
+    char tmp[200];
+    sprintf(tmp, "GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A*66", 
             latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W');
+    make_nmea(tmp, msg);
 }
 
 // Overridden by implementation ---------------------------

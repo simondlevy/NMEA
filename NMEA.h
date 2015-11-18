@@ -116,8 +116,6 @@ class GPGGA_Message : public NMEA_Message {
         Height geoid;
 
         GPGGA_Message(char * msg);
-
-        static void serialize(char * msg, float latitude, float longitude, float altitude);
 };
 
 class GPGLL_Message : public NMEA_Message {

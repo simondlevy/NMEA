@@ -373,7 +373,7 @@ void GPRMC_Message::serialize(char * msg,
     float2str(course, coursestr);
 
     char tmp[200];
-    sprintf(tmp, "GPRMC,%ld,A,%s,%c,%s,%c,%s,%s,%ld,,,A", 
+    sprintf(tmp, "GPRMC,%ld,A,%s,%c,%s,%c,%s,%s,%ld,020.3,E", 
             time, latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W', speedstr, coursestr, date);
     make_nmea(tmp, msg);
 }

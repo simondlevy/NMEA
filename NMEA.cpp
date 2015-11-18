@@ -358,7 +358,8 @@ void GPRMC_Message::serialize(char * msg,
         float longitude, 
         float speed, 
         float course, 
-        unsigned long date) {
+        unsigned long date,
+        float magvar) {
 
     char latstr[20];
     coord2str(latitude, latstr, "%d%02d.%04d");
@@ -372,9 +373,19 @@ void GPRMC_Message::serialize(char * msg,
     char coursestr[10];
     float2str(course, coursestr);
 
+    char magvarstr[10];
+    float2str(abs(magvar), magvarstr);
+
     char tmp[200];
-    sprintf(tmp, "GPRMC,%ld,A,%s,%c,%s,%c,%s,%s,%ld,020.3,E", 
-            time, latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W', speedstr, coursestr, date);
+    sprintf(tmp, "GPRMC,%ld,A,%s,%c,%s,%c,%s,%s,%ld,%s,%c", 
+            time, 
+            latstr, 
+            latitude>0?'N':'S', 
+            lonstr, longitude>0?'E':'W', 
+            speedstr, 
+            coursestr, 
+            date,
+            magvarstr,magvar>0?'E':'W');
     make_nmea(tmp, msg);
 }
 

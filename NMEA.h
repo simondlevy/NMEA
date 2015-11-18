@@ -185,7 +185,8 @@ class GPRMC_Message : public NMEA_Message {
                 float longitude, 
                 float speed, 
                 float course, 
-                unsigned long date);
+                unsigned long date,
+                float magvar);
 };
 
 class GPVTG_Message : public NMEA_Message {

@@ -33,21 +33,6 @@ static void print(char * s) {
 }
 #endif
 
-static int num (char * s, int beg) {
-
-    return 10 * (s[beg]-'0') + (s[beg+1]-'0');
-}
-
-static void make_nmea(char * in, char *out) {
-
-    char chk = 0;
-
-    for (char * p = in; *p; p++)
-        chk ^= *p;
-
-    sprintf(out, "$%s*%02X\r", in, chk);
-}
-
 static void float2str(float f, char * s) {
 
     sprintf(s, "%03d.%d", (int)f, (int)(10*(f-(int)f)));
@@ -216,6 +201,16 @@ class NMEA_Message {
         }
 
         NMEA_Message() {
+        }
+
+        static void make_nmea(char * in, char *out) {
+
+            char chk = 0;
+
+            for (char * p = in; *p; p++)
+                chk ^= *p;
+
+            sprintf(out, "$%s*%02X\r", in, chk);
         }
 
 

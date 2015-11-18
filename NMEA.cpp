@@ -328,6 +328,29 @@ static char coord2str(float coord, char * str, const char * fmt) {
     sprintf(str, fmt, intdeg, intmin, fracmin);
 }
 
+GPVTG_Message::GPVTG_Message(char * msg) : NMEA_Message(msg) {
+
+        this->trackMadeGoodTrue = safeFloat(1);
+        this->trackMadeGoodMagnetic = safeFloat(3);
+        this->speedKnots = safeFloat(5);
+        this->speedKPH = safeFloat(7);
+}
+
+void GPGGA_Message::serialize(char * msg, float latitude, float longitude, float altitude) {
+
+    char latstr[20];
+    coord2str(latitude, latstr, "%d%02d.%04d");
+
+    char lonstr[20];
+    coord2str(longitude, lonstr, "%03d%02d.%04d");
+
+    int intalt = (int)altitude;
+    int fracalt = 100 * (altitude - intalt);
+
+    sprintf(msg, "$GPGGA,170954,%s,%c,%s,%c,1,7,1.5,%d.%2d,M,0,M,,*", 
+            latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W', intalt, fracalt);
+}
+
 void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
 
     char latstr[20];
@@ -338,17 +361,7 @@ void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
 
     sprintf(msg, "$GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A*66", 
             latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W');
-    //strcpy(msg, "$GPRMC,170954,A,3747.000,N,07926.546,W,0,0,161115,,,A*66");
 }
- 
-GPVTG_Message::GPVTG_Message(char * msg) : NMEA_Message(msg) {
-
-        this->trackMadeGoodTrue = safeFloat(1);
-        this->trackMadeGoodMagnetic = safeFloat(3);
-        this->speedKnots = safeFloat(5);
-        this->speedKPH = safeFloat(7);
-}
-
 
 // Overridden by implementation ---------------------------
 

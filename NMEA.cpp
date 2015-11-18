@@ -320,6 +320,7 @@ GPRMC_Message::GPRMC_Message(char * msg) : NMEA_Message(msg) {
 
 static char coord2str(float coord, char * str, const char * fmt) {
 
+    coord = abs(coord);
     int intdeg = coord;
     float minutes = (coord-intdeg)*60;
     int intmin = minutes;
@@ -335,8 +336,8 @@ void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
     char lonstr[20];
     coord2str(longitude, lonstr, "%04d%02d.%04d");
 
-    sprintf(msg, "$GPRMC,170954,A,%s,%c,%s,W,0,0,161115,,,A*66", 
-            latstr, latitude>0?'N':'S', lonstr);
+    sprintf(msg, "$GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A*66", 
+            latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W');
     //strcpy(msg, "$GPRMC,170954,A,3747.000,N,07926.546,W,0,0,161115,,,A*66");
 }
  

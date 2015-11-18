@@ -22,17 +22,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)|| defined(__AVR_ATmega2560__)
-#include <Arduino.h>
-static void print(char * s) {
-    Serial.println(s);
-}
-#else
-static void print(char * s) {
-    printf("%s\n", s);
-}
-#endif
-
 static void float2str(float f, char * s) {
 
     sprintf(s, "%03d.%d", (int)f, (int)(10*(f-(int)f)));
@@ -226,6 +215,19 @@ class NMEA_Message {
             }
             print((char *)"\n");
         }
+
+    private:
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)|| defined(__AVR_ATmega2560__)
+#include <Arduino.h>
+        static void print(char * s) {
+            Serial.println(s);
+        }
+#else
+        static void print(char * s) {
+            printf("%s\n", s);
+        }
+#endif
+
 };
 
 

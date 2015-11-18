@@ -22,10 +22,7 @@
 #include <stdio.h>
 #include <math.h>
 
-static void float2str(float f, char * s) {
 
-    sprintf(s, "%03d.%d", (int)f, (int)(10*(f-(int)f)));
-}
 static char * nexttok() {
 
     return strtok(NULL, ",");
@@ -202,6 +199,10 @@ class NMEA_Message {
             sprintf(out, "$%s*%02X\r", in, chk);
         }
 
+        static void float2str(float f, char * s) {
+
+            sprintf(s, "%03d.%d", (int)f, (int)(10*(f-(int)f)));
+        }
 
     public:
 

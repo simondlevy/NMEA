@@ -179,7 +179,7 @@ class GPRMC_Message : public NMEA_Message {
 
         GPRMC_Message(char * msg);
 
-        static void serialize(char * msg, float latitude, float longitude);
+        static void serialize(char * msg, float latitude, float longitude, float speed);
 };
 
 class GPVTG_Message : public NMEA_Message {

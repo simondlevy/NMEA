@@ -346,7 +346,7 @@ static void make_nmea(char * in, char *out) {
     sprintf(out, "$%s*%02X\r", in, chk);
 }
 
-void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
+void GPRMC_Message::serialize(char * msg, float latitude, float longitude, float speed) {
 
     char latstr[20];
     coord2str(latitude, latstr, "%d%02d.%04d");
@@ -354,9 +354,12 @@ void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
     char lonstr[20];
     coord2str(longitude, lonstr, "%03d%02d.%04d");
 
+    char speedstr[10];
+    sprintf(speedstr, "%03d.%d", (int)speed, (int)(10*(speed-(int)speed)));
+
     char tmp[200];
-    sprintf(tmp, "GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A", 
-            latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W');
+    sprintf(tmp, "GPRMC,170954,A,%s,%c,%s,%c,%s,0,161115,,,A", 
+            latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W', speedstr);
     make_nmea(tmp, msg);
 }
 

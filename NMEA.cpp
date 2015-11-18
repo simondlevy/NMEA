@@ -334,7 +334,7 @@ void GPRMC_Message::serialize(char * msg, float latitude, float longitude) {
     coord2str(latitude, latstr, "%d%02d.%04d");
 
     char lonstr[20];
-    coord2str(longitude, lonstr, "%04d%02d.%04d");
+    coord2str(longitude, lonstr, "%03d%02d.%04d");
 
     sprintf(msg, "$GPRMC,170954,A,%s,%c,%s,%c,0,0,161115,,,A*66", 
             latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W');

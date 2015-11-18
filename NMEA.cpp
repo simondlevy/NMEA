@@ -346,7 +346,13 @@ static void make_nmea(char * in, char *out) {
     sprintf(out, "$%s*%02X\r", in, chk);
 }
 
-void GPRMC_Message::serialize(char * msg, float latitude, float longitude, float speed) {
+static void float2str(float f, char * s) {
+
+    sprintf(s, "%03d.%d", (int)f, (int)(10*(f-(int)f)));
+}
+
+
+void GPRMC_Message::serialize(char * msg, float latitude, float longitude, float speed, float course) {
 
     char latstr[20];
     coord2str(latitude, latstr, "%d%02d.%04d");
@@ -355,11 +361,14 @@ void GPRMC_Message::serialize(char * msg, float latitude, float longitude, float
     coord2str(longitude, lonstr, "%03d%02d.%04d");
 
     char speedstr[10];
-    sprintf(speedstr, "%03d.%d", (int)speed, (int)(10*(speed-(int)speed)));
+    float2str(speed, speedstr);
+
+    char coursestr[10];
+    float2str(course, coursestr);
 
     char tmp[200];
-    sprintf(tmp, "GPRMC,170954,A,%s,%c,%s,%c,%s,0,161115,,,A", 
-            latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W', speedstr);
+    sprintf(tmp, "GPRMC,170954,A,%s,%c,%s,%c,%s,%s,161115,,,A", 
+            latstr, latitude>0?'N':'S', lonstr, longitude>0?'E':'W', speedstr, coursestr);
     make_nmea(tmp, msg);
 }
 

@@ -1,4 +1,4 @@
-/*
+/**
    NMEA.h: C++ header for for NMEA parsing/serializing library
 
    For NMEA protocol see http://aprs.gids.nl/nmea/ 
@@ -15,7 +15,7 @@
    GNU General Public License for more details.
    You should have received a copy of the GNU Lesser General Public License 
    along with this code.  If not, see <http:#www.gnu.org/licenses/>.
- */
+*/
 
 class Time {
 
@@ -380,10 +380,10 @@ class GPRMC_Message : public NMEA_Message {
                 float magvar) {
 
             char latstr[20];
-            coord2str(latitude, latstr, "%d%02d.%04d");
+            coord2str(latitude, latstr, "%d%02d.%d");
 
             char lonstr[20];
-            coord2str(longitude, lonstr, "%03d%02d.%04d");
+            coord2str(longitude, lonstr, "%03d%02d.%d");
 
             char speedstr[10];
             float2str(speed, speedstr);

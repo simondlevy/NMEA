@@ -1,5 +1,5 @@
 /*
-   NMEA.h: C++ header for for NMEA parsing library
+   NMEA.h: C++ header for for NMEA parsing/serializing library
 
    For NMEA protocol see http://aprs.gids.nl/nmea/ 
 
@@ -16,13 +16,6 @@
    You should have received a copy of the GNU Lesser General Public License 
    along with this code.  If not, see <http:#www.gnu.org/licenses/>.
  */
-
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-
-
 
 class Time {
 

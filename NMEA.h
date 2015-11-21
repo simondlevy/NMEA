@@ -17,6 +17,9 @@
    along with this code.  If not, see <http:#www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+#include <string.h>
+
 class Time {
 
     public:
@@ -369,7 +372,6 @@ class GPRMC_Message : public NMEA_Message {
             }
         }
 
-
         static void serialize(char * msg, 
                 unsigned long time, 
                 float latitude, 
@@ -394,9 +396,10 @@ class GPRMC_Message : public NMEA_Message {
             char magvarstr[10];
             float2str(abs(magvar), magvarstr);
 
+
             char tmp[200];
-            sprintf(tmp, "GPRMC,%ld,A,%s,%c,%s,%c,%s,%s,%ld,%s,%c", 
-                    time, 
+            sprintf(tmp, "GPRMC,%06d,A,%s,%c,%s,%c,%s,%s,%ld,%s,%c", 
+                    (int)time, 
                     latstr, 
                     latitude>0?'N':'S', 
                     lonstr, longitude>0?'E':'W', 
@@ -519,5 +522,3 @@ class NMEA_Parser {
             } 
         }
 };
-
-

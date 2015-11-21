@@ -17,6 +17,7 @@
    along with this code.  If not, see <http:#www.gnu.org/licenses/>.
 */
 
+
 class Time {
 
     public:
@@ -182,9 +183,14 @@ class NMEA_Message {
             sprintf(out, "$%s*%02X\r", in, chk);
         }
 
+        static void float2str(float f, char * s, const char * fmt) {
+
+            sprintf(s, fmt, (int)f, (int)(10*(f-(int)f)));
+        }
+
         static void float2str(float f, char * s) {
 
-            sprintf(s, "%03d.%d", (int)f, (int)(10*(f-(int)f)));
+            float2str(f, s, "%03d.%d");
         }
 
     public:
@@ -252,6 +258,44 @@ class GPGGA_Message : public NMEA_Message {
             makeHeight(this->geoid, 11);
         }
 
+        static void serialize(char * msg, 
+                int hours, int minutes, int seconds,
+                float latitude, 
+                float longitude, 
+                int fixQuality,
+                int numSatellites,
+                float hdop,
+                float altitude,
+                float geoid) {
+
+            char latstr[20];
+            coord2str(latitude, latstr, "%d%02d.%d");
+
+            char lonstr[20];
+            coord2str(longitude, lonstr, "%03d%02d.%d");
+
+            char hdopstr[5];
+            float2str(hdop, hdopstr, "%d.%d");
+
+            char altstr[5];
+            float2str(altitude, altstr);
+
+            char geoidstr[5];
+            float2str(geoid, geoidstr);
+
+            char tmp[200];
+            sprintf(tmp, "GPGGA,%02d%02d%02d,A,%s,%c,%s,%c,%d,%d,%s,%s,M,%s,M,,",
+                    hours, minutes, seconds,
+                    latstr, 
+                    latitude>0?'N':'S', 
+                    lonstr, longitude>0?'E':'W', 
+                    fixQuality,
+                    numSatellites,
+                    hdopstr,
+                    altstr,
+                    geoidstr);
+            make_nmea(tmp, msg);
+        }
 };
 
 class GPGLL_Message : public NMEA_Message {
@@ -370,7 +414,7 @@ class GPRMC_Message : public NMEA_Message {
         }
 
         static void serialize(char * msg, 
-                unsigned long time, 
+                int hours, int minutes, int seconds,
                 float latitude, 
                 float longitude, 
                 float speed, 
@@ -395,8 +439,8 @@ class GPRMC_Message : public NMEA_Message {
 
 
             char tmp[200];
-            sprintf(tmp, "GPRMC,%06d,A,%s,%c,%s,%c,%s,%s,%ld,%s,%c", 
-                    (int)time, 
+            sprintf(tmp, "GPRMC,%02d%02d%02d,A,%s,%c,%s,%c,%s,%s,%ld,%s,%c", 
+                    hours, minutes, seconds,
                     latstr, 
                     latitude>0?'N':'S', 
                     lonstr, longitude>0?'E':'W', 

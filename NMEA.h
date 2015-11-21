@@ -17,9 +17,6 @@
    along with this code.  If not, see <http:#www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <string.h>
-
 class Time {
 
     public:

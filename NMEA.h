@@ -171,7 +171,7 @@ class NMEA_Message {
                 p++;
             }
 
-            strcpy(this->debug, msg);
+            strcpy(this->raw, msg);
         }
 
         NMEA_Message() {
@@ -199,11 +199,11 @@ class NMEA_Message {
 
     public:
 
-        char debug[100];
+        char raw[200];
 
     private:
 
-       static int twodig(char * p, int k) {
+        static int twodig(char * p, int k) {
 
             return 10 * (p[k]-'0') + (p[k+1]-'0');
         }

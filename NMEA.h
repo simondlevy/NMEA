@@ -17,6 +17,10 @@
    along with this code.  If not, see <http:#www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
 
 class Time {
 
@@ -197,33 +201,12 @@ class NMEA_Message {
 
         char debug[100];
 
-        void dump() {
-
-            for (int k=0; k<this->nparts; ++k) {
-
-                print(this->parts[k]);
-            }
-            print((char *)"\n");
-        }
-
     private:
 
        static int twodig(char * p, int k) {
 
             return 10 * (p[k]-'0') + (p[k+1]-'0');
         }
-
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)|| defined(__AVR_ATmega2560__)
-#include <Arduino.h>
-        static void print(char * s) {
-            Serial.println(s);
-        }
-#else
-        static void print(char * s) {
-            printf("%s\n", s);
-        }
-#endif
-
 };
 
 

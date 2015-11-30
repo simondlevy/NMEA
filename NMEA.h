@@ -171,7 +171,7 @@ class NMEA_Message {
                 p++;
             }
 
-            strcpy(this->raw, msg);
+            sprintf(this->raw, "$%s", msg);
         }
 
         NMEA_Message() {

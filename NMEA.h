@@ -29,6 +29,7 @@ class Time {
         int hours;
         int minutes;
         int seconds;
+        int secfrac;
 };
 
 class Date {
@@ -69,9 +70,25 @@ class SatelliteInView {
 
 class NMEA_Message {
 
+    friend class NMEA_Parser;
+
     protected:
 
-        char parts[20][30];
+        static int checksum(char * msg) {
+
+            char * p = msg;
+
+            char sum = 0;
+
+            while (*p && (*p != '*')) {
+                sum ^= *p;
+                p++;
+            }
+
+            return sum;
+        }
+
+  char parts[20][30];
         int nparts;
 
         int makeInt(int pos) {
@@ -88,6 +105,7 @@ class NMEA_Message {
             t.hours   = twodig(p, 0);
             t.minutes = twodig(p, 2); 
             t.seconds = twodig(p, 4);
+            t.secfrac = (strchr(p, '.')) ? twodig(p, 7) : -1;
         }
 
         void makeDate(Date & d, int pos) {
@@ -138,7 +156,7 @@ class NMEA_Message {
             return available(pos) ? makeFloat(pos) : -1;
         }
 
-        static char coord2str(float coord, char * str, const char * fmt) {
+        static void coord2str(float coord, char * str, const char * fmt) {
 
             coord = abs(coord);
             int intdeg = coord;
@@ -146,6 +164,13 @@ class NMEA_Message {
             int intmin = minutes;
             int fracmin = 1000 * (minutes - intmin);
             sprintf(str, fmt, intdeg, intmin, fracmin);
+        }
+
+        static void coord2str(Coordinate coord, char * str, const char * fmt, char pos, char neg) {
+
+            int intmin = coord.minutes;
+            unsigned int fracmin = 100000 * (coord.minutes - intmin);
+            sprintf(str, fmt, coord.degrees, intmin, fracmin, coord.sign > 0 ? pos : neg);
         }
 
         NMEA_Message(char * msg) {
@@ -187,9 +212,14 @@ class NMEA_Message {
             sprintf(out, "$%s*%02X\r", in, chk);
         }
 
+        static void float2str(float f, char * s, const char * fmt, int factor) {
+
+            sprintf(s, fmt, (int)f, (int)(factor*(f-(int)f)));
+        }
+
         static void float2str(float f, char * s, const char * fmt) {
 
-            sprintf(s, fmt, (int)f, (int)(10*(f-(int)f)));
+            float2str(f, s, fmt, 10);
         }
 
         static void float2str(float f, char * s) {
@@ -396,6 +426,34 @@ class GPRMC_Message : public NMEA_Message {
             }
         }
 
+
+        void serialize(char * msg) {
+            Time t = this->time;
+            char fracstr[4] = "";
+            if (t.secfrac >= 0)
+                sprintf(fracstr, ".%02d", t.secfrac);
+            Coordinate lat = this->latitude;
+            char latstr[20];
+            coord2str(lat, latstr, "%d%02d.%05u,%c", 'N', 'S');
+            Coordinate lon = this->longitude;
+            char lonstr[20];
+            coord2str(lon, lonstr, "%03d%02d.%05u,%c", 'E', 'W');
+            char speedstr[10];
+            float2str(this->groundspeedKnots, speedstr, "%d.%03d", 1000);
+            char anglestr[10] = "";
+            if (this->trackAngle > 0)
+                float2str(this->trackAngle, anglestr, "%03d.%d");
+            Date d = this->date;
+
+            char tmp[200];
+
+            // XXX ignore magnetic variation for now
+            sprintf(tmp, "GPRMC,%02d%02d%02d%s,%c,%s,%s,%s,%s,%02d%02d%02d,,,D*", 
+                    t.hours, t.minutes, t.seconds, fracstr, this->warning, latstr, lonstr, speedstr, anglestr,
+                    d.day, d.month,d.year);
+            sprintf(msg, "$%s%02X", tmp, checksum(tmp));
+        }
+
         static void serialize(char * msg, 
                 int hours, int minutes, int seconds,
                 float latitude, 
@@ -419,7 +477,6 @@ class GPRMC_Message : public NMEA_Message {
 
             char magvarstr[10];
             float2str(abs(magvar), magvarstr);
-
 
             char tmp[200];
             sprintf(tmp, "GPRMC,%02d%02d%02d,A,%s,%c,%s,%c,%s,%s,%ld,%s,%c", 
@@ -496,17 +553,11 @@ class NMEA_Parser {
                 // only allow messages starting with GP*** (ignore startup noise)
                 if (!strncmp(this->msg, "GP", 2)) {
 
-                    char * p = this->msg;
-
-                    // compute checksum from message contents, terminated by asterisk
-                    char sum = 0;
-                    while (*p && (*p != '*')) {
-                        sum ^= *p;
-                        p++;
-                    }
+                    int sum = NMEA_Message::checksum(this->msg);
 
                     // if checksum matches checksum after asterisk, process the message
                     int chk;
+                    char * p = strchr(this->msg, '*');
                     sscanf(++p, "%x", &chk);
                     if (chk == sum) {
                         if      (ismsg("GPGGA")) {

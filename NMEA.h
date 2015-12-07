@@ -1,21 +1,21 @@
 /**
-   NMEA.h: C++ header for for NMEA parsing/serializing library
+  NMEA.h: C++ header for for NMEA parsing/serializing library
 
-   For NMEA protocol see http://aprs.gids.nl/nmea/ 
+  For NMEA protocol see http://aprs.gids.nl/nmea/ 
 
-   Copyright (C) Simon D. Levy 2015
+  Copyright (C) Simon D. Levy 2015
 
-   This code is free software: you can redistribute it and/or modify
-   it under the terms of the GNU Lesser General Public License as 
-   published by the Free Software Foundation, either version 3 of the 
-   License, or (at your option) any later version.
-   This code is distributed in the hope that it will be useful,     
-   but WITHOUT ANY WARRANTY without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   You should have received a copy of the GNU Lesser General Public License 
-   along with this code.  If not, see <http:#www.gnu.org/licenses/>.
-*/
+  This code is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as 
+  published by the Free Software Foundation, either version 3 of the 
+  License, or (at your option) any later version.
+  This code is distributed in the hope that it will be useful,     
+  but WITHOUT ANY WARRANTY without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  You should have received a copy of the GNU Lesser General Public License 
+  along with this code.  If not, see <http:#www.gnu.org/licenses/>.
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -74,169 +74,174 @@ class NMEA_Message {
 
     protected:
 
-        static int checksum(char * msg) {
+    static float degrees(Coordinate c) {
 
-            char * p = msg;
+        return c.sign * c.degrees + c.minutes/60;
+    }
 
-            char sum = 0;
+    static int checksum(char * msg) {
 
-            while (*p && (*p != '*')) {
-                sum ^= *p;
-                p++;
+        char * p = msg;
+
+        char sum = 0;
+
+        while (*p && (*p != '*')) {
+            sum ^= *p;
+            p++;
+        }
+
+        return sum;
+    }
+
+    char parts[20][30];
+    int nparts;
+
+    int makeInt(int pos) {
+        return atoi(this->parts[pos]);
+    }
+
+    float makeFloat(int pos) {
+        return atof(this->parts[pos]);
+    }
+
+    void makeTime(Time & t, int pos) {
+        char * p = this->parts[pos];
+
+        t.hours   = twodig(p, 0);
+        t.minutes = twodig(p, 2); 
+        t.seconds = twodig(p, 4);
+        t.secfrac = (strchr(p, '.')) ? twodig(p, 7) : -1;
+    }
+
+    void makeDate(Date & d, int pos) {
+
+        char * p = this->parts[pos];
+
+        d.day   = twodig(p, 0);
+        d.month = twodig(p, 2); 
+        d.year  = twodig(p, 4);
+    }
+
+    void makeCoordinate(Coordinate & c, int pos) {
+        char tmp[20];
+        strcpy(tmp, this->parts[pos]);
+
+        char * p = strchr(tmp, '.');
+        *p = 0;
+
+        ++p;
+
+        int degmin = atoi(tmp);
+
+        c.sign = hemiSign(pos+1);
+        c.degrees = degmin / 100;
+        c.minutes = degmin % 100 + atol(p) / pow(10, strlen(p));
+    }
+
+    void makeHeight(Height & h, int pos) {
+        h.value = makeFloat(pos);
+        h.units = this->parts[pos+1][0];
+    }
+
+
+    int hemiSign(int pos) {
+        char hemi = this->parts[pos][0];
+        return (hemi == 'S' || hemi == 'W') ? -1 : +1;
+    }
+
+    bool available(int pos) {
+        return this->parts[pos][0] != 0;
+    }
+
+    int safeInt(int pos) {
+        return available(pos) ? makeInt(pos) : -1;
+    }
+
+    float safeFloat(int pos) {
+        return available(pos) ? makeFloat(pos) : -1;
+    }
+
+    static void coord2str(float coord, char * str, const char * fmt) {
+
+        coord = abs(coord);
+        int intdeg = coord;
+        float minutes = (coord-intdeg)*60;
+        int intmin = minutes;
+        int fracmin = 1000 * (minutes - intmin);
+        sprintf(str, fmt, intdeg, intmin, fracmin);
+    }
+
+    static void coord2str(Coordinate coord, char * str, const char * fmt, char pos, char neg) {
+
+        int intmin = coord.minutes;
+        unsigned int fracmin = 100000 * (coord.minutes - intmin);
+        sprintf(str, fmt, coord.degrees, intmin, fracmin, coord.sign > 0 ? pos : neg);
+    }
+
+    NMEA_Message(char * msg) {
+
+        this->nparts = 0; 
+        int j = 0;
+        char * p = msg;
+
+        while (*p) {
+
+            if (*p == ',') {
+
+                this->parts[this->nparts][j] = 0;
+                j = 0;
+                this->nparts++;
+            }
+            else {
+
+                this->parts[this->nparts][j] = *p;
+                j++;
             }
 
-            return sum;
+            p++;
         }
 
-  char parts[20][30];
-        int nparts;
+        sprintf(this->raw, "$%s\r", msg);
+    }
 
-        int makeInt(int pos) {
-            return atoi(this->parts[pos]);
-        }
+    NMEA_Message() {
+    }
 
-        float makeFloat(int pos) {
-            return atof(this->parts[pos]);
-        }
+    static void make_nmea(char * in, char *out) {
 
-        void makeTime(Time & t, int pos) {
-            char * p = this->parts[pos];
+        char chk = 0;
 
-            t.hours   = twodig(p, 0);
-            t.minutes = twodig(p, 2); 
-            t.seconds = twodig(p, 4);
-            t.secfrac = (strchr(p, '.')) ? twodig(p, 7) : -1;
-        }
+        for (char * p = in; *p; p++)
+            chk ^= *p;
 
-        void makeDate(Date & d, int pos) {
+        sprintf(out, "$%s*%02X\r", in, chk);
+    }
 
-            char * p = this->parts[pos];
+    static void float2str(float f, char * s, const char * fmt, int factor) {
 
-            d.day   = twodig(p, 0);
-            d.month = twodig(p, 2); 
-            d.year  = twodig(p, 4);
-        }
+        sprintf(s, fmt, (int)f, abs((int)((factor+1)*(f-(int)f))));
+    }
 
-        void makeCoordinate(Coordinate & c, int pos) {
-            char tmp[20];
-            strcpy(tmp, this->parts[pos]);
+    static void float2str(float f, char * s, const char * fmt) {
 
-            char * p = strchr(tmp, '.');
-            *p = 0;
+        float2str(f, s, fmt, 10);
+    }
 
-            ++p;
+    static void float2str(float f, char * s) {
 
-            int degmin = atoi(tmp);
-
-            c.sign = hemiSign(pos+1);
-            c.degrees = degmin / 100;
-            c.minutes = degmin % 100 + atol(p) / pow(10, strlen(p));
-        }
-
-        void makeHeight(Height & h, int pos) {
-            h.value = makeFloat(pos);
-            h.units = this->parts[pos+1][0];
-        }
-
-
-        int hemiSign(int pos) {
-            char hemi = this->parts[pos][0];
-            return (hemi == 'S' || hemi == 'W') ? -1 : +1;
-        }
-
-        bool available(int pos) {
-            return this->parts[pos][0] != 0;
-        }
-
-        int safeInt(int pos) {
-            return available(pos) ? makeInt(pos) : -1;
-        }
-
-        float safeFloat(int pos) {
-            return available(pos) ? makeFloat(pos) : -1;
-        }
-
-        static void coord2str(float coord, char * str, const char * fmt) {
-
-            coord = abs(coord);
-            int intdeg = coord;
-            float minutes = (coord-intdeg)*60;
-            int intmin = minutes;
-            int fracmin = 1000 * (minutes - intmin);
-            sprintf(str, fmt, intdeg, intmin, fracmin);
-        }
-
-        static void coord2str(Coordinate coord, char * str, const char * fmt, char pos, char neg) {
-
-            int intmin = coord.minutes;
-            unsigned int fracmin = 100000 * (coord.minutes - intmin);
-            sprintf(str, fmt, coord.degrees, intmin, fracmin, coord.sign > 0 ? pos : neg);
-        }
-
-        NMEA_Message(char * msg) {
-
-            this->nparts = 0; 
-            int j = 0;
-            char * p = msg;
-
-            while (*p) {
-
-                if (*p == ',') {
-
-                    this->parts[this->nparts][j] = 0;
-                    j = 0;
-                    this->nparts++;
-                }
-                else {
-
-                    this->parts[this->nparts][j] = *p;
-                    j++;
-                }
-
-                p++;
-            }
-
-            sprintf(this->raw, "$%s\r", msg);
-        }
-
-        NMEA_Message() {
-        }
-
-        static void make_nmea(char * in, char *out) {
-
-            char chk = 0;
-
-            for (char * p = in; *p; p++)
-                chk ^= *p;
-
-            sprintf(out, "$%s*%02X\r", in, chk);
-        }
-
-        static void float2str(float f, char * s, const char * fmt, int factor) {
-
-            sprintf(s, fmt, (int)f, (int)(factor*(f-(int)f)));
-        }
-
-        static void float2str(float f, char * s, const char * fmt) {
-
-            float2str(f, s, fmt, 10);
-        }
-
-        static void float2str(float f, char * s) {
-
-            float2str(f, s, "%03d.%d");
-        }
+        float2str(f, s, "%03d.%d");
+    }
 
     public:
 
-        char raw[200];
+    char raw[200];
 
     private:
 
-        static int twodig(char * p, int k) {
+    static int twodig(char * p, int k) {
 
-            return 10 * (p[k]-'0') + (p[k+1]-'0');
-        }
+        return 10 * (p[k]-'0') + (p[k+1]-'0');
+    }
 };
 
 
@@ -308,6 +313,34 @@ class GPGGA_Message : public NMEA_Message {
                     altstr,
                     geoidstr);
             make_nmea(tmp, msg);
+        }
+
+        void serialize(char * msg) {
+            Time t = this->time;
+            char fracstr[4] = "";
+            if (t.secfrac >= 0)
+                sprintf(fracstr, ".%02d", t.secfrac);
+            Coordinate lat = this->latitude;
+            char latstr[20];
+            coord2str(lat, latstr, "%d%02d.%05u,%c", 'N', 'S');
+            Coordinate lon = this->longitude;
+            char lonstr[20];
+            coord2str(lon, lonstr, "%03d%02d.%05u,%c", 'E', 'W');
+            char hdopstr[10];
+            float2str(hdop, hdopstr, "%d.%02d", 100);
+            char altstr[10];
+            float2str(this->altitude.value, altstr, "%d.%1d", 10);
+            char geoidstr[10];
+            float2str(this->geoid.value, geoidstr, "%d.%1d", 10);
+
+
+            char tmp[200];
+
+            sprintf(tmp, "GPGGA,%02d%02d%02d%s,%s,%s,%d,%02d,%s,%s,%c,%s,%c,,0000*", 
+                    t.hours, t.minutes, t.seconds, fracstr, latstr, lonstr, 
+                    this->fixQuality, this->numSatellites, hdopstr, 
+                    altstr, this->altitude.units, geoidstr, this->geoid.units);
+            sprintf(msg, "$%s%02X", tmp, checksum(tmp));
         }
 };
 
@@ -427,33 +460,6 @@ class GPRMC_Message : public NMEA_Message {
         }
 
 
-        void serialize(char * msg) {
-            Time t = this->time;
-            char fracstr[4] = "";
-            if (t.secfrac >= 0)
-                sprintf(fracstr, ".%02d", t.secfrac);
-            Coordinate lat = this->latitude;
-            char latstr[20];
-            coord2str(lat, latstr, "%d%02d.%05u,%c", 'N', 'S');
-            Coordinate lon = this->longitude;
-            char lonstr[20];
-            coord2str(lon, lonstr, "%03d%02d.%05u,%c", 'E', 'W');
-            char speedstr[10];
-            float2str(this->groundspeedKnots, speedstr, "%d.%03d", 1000);
-            char anglestr[10] = "";
-            if (this->trackAngle > 0)
-                float2str(this->trackAngle, anglestr, "%03d.%d");
-            Date d = this->date;
-
-            char tmp[200];
-
-            // XXX ignore magnetic variation for now
-            sprintf(tmp, "GPRMC,%02d%02d%02d%s,%c,%s,%s,%s,%s,%02d%02d%02d,,,D*", 
-                    t.hours, t.minutes, t.seconds, fracstr, this->warning, latstr, lonstr, speedstr, anglestr,
-                    d.day, d.month,d.year);
-            sprintf(msg, "$%s%02X", tmp, checksum(tmp));
-        }
-
         static void serialize(char * msg, 
                 int hours, int minutes, int seconds,
                 float latitude, 
@@ -489,6 +495,33 @@ class GPRMC_Message : public NMEA_Message {
                     date,
                     magvarstr,magvar>0?'E':'W');
             make_nmea(tmp, msg);
+        }
+
+        void serialize(char * msg) {
+            Time t = this->time;
+            char fracstr[4] = "";
+            if (t.secfrac >= 0)
+                sprintf(fracstr, ".%02d", t.secfrac);
+            Coordinate lat = this->latitude;
+            char latstr[20];
+            coord2str(lat, latstr, "%d%02d.%05u,%c", 'N', 'S');
+            Coordinate lon = this->longitude;
+            char lonstr[20];
+            coord2str(lon, lonstr, "%03d%02d.%05u,%c", 'E', 'W');
+            char speedstr[10];
+            float2str(this->groundspeedKnots, speedstr, "%d.%03d", 1000);
+            char anglestr[10] = "";
+            if (this->trackAngle > 0)
+                float2str(this->trackAngle, anglestr, "%03d.%d");
+            Date d = this->date;
+
+            char tmp[200];
+
+            // XXX ignore magnetic variation for now
+            sprintf(tmp, "GPRMC,%02d%02d%02d%s,%c,%s,%s,%s,%s,%02d%02d%02d,,,D*", 
+                    t.hours, t.minutes, t.seconds, fracstr, this->warning, latstr, lonstr, speedstr, anglestr,
+                    d.day, d.month,d.year);
+            sprintf(msg, "$%s%02X", tmp, checksum(tmp));
         }
 };
 

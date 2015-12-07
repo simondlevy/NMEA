@@ -89,11 +89,6 @@ class NMEA_Message {
 
     protected:
 
-    float degrees(Coordinate c) {
-
-        return c.sign * c.degrees + c.minutes/60;
-    }
-
     char parts[20][30];
     int nparts;
 

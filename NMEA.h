@@ -22,6 +22,21 @@
 #include <string.h>
 #include <math.h>
 
+int checksum(char * msg) {
+
+    char * p = msg;
+
+    char sum = 0;
+
+    while (*p && (*p != '*')) {
+        sum ^= *p;
+        p++;
+    }
+
+    return sum;
+}
+
+
 class Time {
 
     public:
@@ -74,23 +89,9 @@ class NMEA_Message {
 
     protected:
 
-    static float degrees(Coordinate c) {
+    float degrees(Coordinate c) {
 
         return c.sign * c.degrees + c.minutes/60;
-    }
-
-    static int checksum(char * msg) {
-
-        char * p = msg;
-
-        char sum = 0;
-
-        while (*p && (*p != '*')) {
-            sum ^= *p;
-            p++;
-        }
-
-        return sum;
     }
 
     char parts[20][30];
@@ -161,7 +162,7 @@ class NMEA_Message {
         return available(pos) ? makeFloat(pos) : -1;
     }
 
-    static void coord2str(float coord, char * str, const char * fmt) {
+    void coord2str(float coord, char * str, const char * fmt) {
 
         coord = abs(coord);
         int intdeg = coord;
@@ -171,7 +172,7 @@ class NMEA_Message {
         sprintf(str, fmt, intdeg, intmin, fracmin);
     }
 
-    static void coord2str(Coordinate coord, char * str, const char * fmt, char pos, char neg) {
+    void coord2str(Coordinate coord, char * str, const char * fmt, char pos, char neg) {
 
         int intmin = coord.minutes;
         unsigned int fracmin = 100000 * (coord.minutes - intmin);
@@ -207,7 +208,7 @@ class NMEA_Message {
     NMEA_Message() {
     }
 
-    static void make_nmea(char * in, char *out) {
+    void make_nmea(char * in, char *out) {
 
         char chk = 0;
 
@@ -217,17 +218,17 @@ class NMEA_Message {
         sprintf(out, "$%s*%02X\r", in, chk);
     }
 
-    static void float2str(float f, char * s, const char * fmt, int factor) {
+    void float2str(float f, char * s, const char * fmt, int factor) {
 
         sprintf(s, fmt, (int)f, abs((int)((factor+1)*(f-(int)f))));
     }
 
-    static void float2str(float f, char * s, const char * fmt) {
+    void float2str(float f, char * s, const char * fmt) {
 
         float2str(f, s, fmt, 10);
     }
 
-    static void float2str(float f, char * s) {
+    void float2str(float f, char * s) {
 
         float2str(f, s, "%03d.%d");
     }
@@ -238,7 +239,7 @@ class NMEA_Message {
 
     private:
 
-    static int twodig(char * p, int k) {
+    int twodig(char * p, int k) {
 
         return 10 * (p[k]-'0') + (p[k+1]-'0');
     }
@@ -276,7 +277,7 @@ class GPGGA_Message : public NMEA_Message {
             makeHeight(this->geoid, 11);
         }
 
-        static void serialize(char * msg, 
+        void serialize(char * msg, 
                 int hours, int minutes, int seconds,
                 float latitude, 
                 float longitude, 
@@ -460,7 +461,7 @@ class GPRMC_Message : public NMEA_Message {
         }
 
 
-        static void serialize(char * msg, 
+        void serialize(char * msg, 
                 int hours, int minutes, int seconds,
                 float latitude, 
                 float longitude, 
@@ -586,7 +587,7 @@ class NMEA_Parser {
                 // only allow messages starting with GP*** (ignore startup noise)
                 if (!strncmp(this->msg, "GP", 2)) {
 
-                    int sum = NMEA_Message::checksum(this->msg);
+                    int sum = checksum(this->msg);
 
                     // if checksum matches checksum after asterisk, process the message
                     int chk;

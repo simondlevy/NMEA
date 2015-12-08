@@ -163,14 +163,15 @@ class NMEA_Message {
         int intdeg = coord;
         float minutes = (coord-intdeg)*60;
         int intmin = minutes;
-        int fracmin = 1000 * (minutes - intmin);
+        int fracmin = 10000 * (minutes - intmin);
         sprintf(str, fmt, intdeg, intmin, fracmin);
     }
+
 
     void coord2str(Coordinate coord, char * str, const char * fmt, char pos, char neg) {
 
         int intmin = coord.minutes;
-        unsigned int fracmin = 100000 * (coord.minutes - intmin);
+        unsigned long fracmin = 100000 * (coord.minutes - intmin);
         sprintf(str, fmt, coord.degrees, intmin, fracmin, coord.sign > 0 ? pos : neg);
     }
 
@@ -272,45 +273,6 @@ class GPGGA_Message : public NMEA_Message {
             makeHeight(this->geoid, 11);
         }
 
-        void serialize(char * msg, 
-                int hours, int minutes, int seconds,
-                float latitude, 
-                float longitude, 
-                int fixQuality,
-                int numSatellites,
-                float hdop,
-                float altitude,
-                float geoid) {
-
-            char latstr[20];
-            coord2str(latitude, latstr, "%d%02d.%d");
-
-            char lonstr[20];
-            coord2str(longitude, lonstr, "%03d%02d.%d");
-
-            char hdopstr[5];
-            float2str(hdop, hdopstr, "%d.%d");
-
-            char altstr[5];
-            float2str(altitude, altstr);
-
-            char geoidstr[5];
-            float2str(geoid, geoidstr);
-
-            char tmp[200];
-            sprintf(tmp, "GPGGA,%02d%02d%02d,A,%s,%c,%s,%c,%d,%d,%s,%s,M,%s,M,,",
-                    hours, minutes, seconds,
-                    latstr, 
-                    latitude>0?'N':'S', 
-                    lonstr, longitude>0?'E':'W', 
-                    fixQuality,
-                    numSatellites,
-                    hdopstr,
-                    altstr,
-                    geoidstr);
-            make_nmea(tmp, msg);
-        }
-
         void serialize(char * msg) {
             Time t = this->time;
             char fracstr[4] = "";
@@ -318,10 +280,10 @@ class GPGGA_Message : public NMEA_Message {
                 sprintf(fracstr, ".%02d", t.secfrac);
             Coordinate lat = this->latitude;
             char latstr[20];
-            coord2str(lat, latstr, "%d%02d.%05u,%c", 'N', 'S');
+            coord2str(lat, latstr, "%d%02d.%5ld,%c", 'N', 'S');
             Coordinate lon = this->longitude;
             char lonstr[20];
-            coord2str(lon, lonstr, "%03d%02d.%05u,%c", 'E', 'W');
+            coord2str(lon, lonstr, "%03d%02d.%5ld,%c", 'E', 'W');
             char hdopstr[10];
             float2str(hdop, hdopstr, "%d.%02d", 100);
             char altstr[10];
@@ -455,44 +417,6 @@ class GPRMC_Message : public NMEA_Message {
             }
         }
 
-
-        void serialize(char * msg, 
-                int hours, int minutes, int seconds,
-                float latitude, 
-                float longitude, 
-                float speed, 
-                float course, 
-                unsigned long date,
-                float magvar) {
-
-            char latstr[20];
-            coord2str(latitude, latstr, "%d%02d.%d");
-
-            char lonstr[20];
-            coord2str(longitude, lonstr, "%03d%02d.%d");
-
-            char speedstr[10];
-            float2str(speed, speedstr);
-
-            char coursestr[10];
-            float2str(course, coursestr);
-
-            char magvarstr[10];
-            float2str(abs(magvar), magvarstr);
-
-            char tmp[200];
-            sprintf(tmp, "GPRMC,%02d%02d%02d,A,%s,%c,%s,%c,%s,%s,%ld,%s,%c", 
-                    hours, minutes, seconds,
-                    latstr, 
-                    latitude>0?'N':'S', 
-                    lonstr, longitude>0?'E':'W', 
-                    speedstr, 
-                    coursestr, 
-                    date,
-                    magvarstr,magvar>0?'E':'W');
-            make_nmea(tmp, msg);
-        }
-
         void serialize(char * msg) {
             Time t = this->time;
             char fracstr[4] = "";
@@ -500,10 +424,10 @@ class GPRMC_Message : public NMEA_Message {
                 sprintf(fracstr, ".%02d", t.secfrac);
             Coordinate lat = this->latitude;
             char latstr[20];
-            coord2str(lat, latstr, "%d%02d.%05u,%c", 'N', 'S');
+            coord2str(lat, latstr, "%d%02d.%5ld,%c", 'N', 'S');
             Coordinate lon = this->longitude;
             char lonstr[20];
-            coord2str(lon, lonstr, "%03d%02d.%05u,%c", 'E', 'W');
+            coord2str(lon, lonstr, "%03d%02d.%5ld,%c", 'E', 'W');
             char speedstr[10];
             float2str(this->groundspeedKnots, speedstr, "%d.%03d", 1000);
             char anglestr[10] = "";

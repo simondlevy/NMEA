@@ -62,14 +62,14 @@ class Coordinate {
 
         int  sign;
         int   degrees;
-        float minutes;
+        double minutes;
 };
 
 class Height {
 
     public:
 
-        float value;
+        double value;
         char units;
 };
 
@@ -96,7 +96,7 @@ class NMEA_Message {
         return atoi(this->parts[pos]);
     }
 
-    float makeFloat(int pos) {
+    double makeFloat(int pos) {
         return atof(this->parts[pos]);
     }
 
@@ -153,15 +153,15 @@ class NMEA_Message {
         return available(pos) ? makeInt(pos) : -1;
     }
 
-    float safeFloat(int pos) {
+    double safeFloat(int pos) {
         return available(pos) ? makeFloat(pos) : -1;
     }
 
-    void coord2str(float coord, char * str, const char * fmt) {
+    void coord2str(double coord, char * str, const char * fmt) {
 
         coord = abs(coord);
         int intdeg = coord;
-        float minutes = (coord-intdeg)*60;
+        double minutes = (coord-intdeg)*60;
         int intmin = minutes;
         int fracmin = 10000 * (minutes - intmin);
         sprintf(str, fmt, intdeg, intmin, fracmin);
@@ -214,19 +214,19 @@ class NMEA_Message {
         sprintf(out, "$%s*%02X\r", in, chk);
     }
 
-    void float2str(float f, char * s, const char * fmt, int factor) {
+    void double2str(double f, char * s, const char * fmt, int factor) {
 
         sprintf(s, fmt, (int)f, abs((int)((factor+1)*(f-(int)f))));
     }
 
-    void float2str(float f, char * s, const char * fmt) {
+    void double2str(double f, char * s, const char * fmt) {
 
-        float2str(f, s, fmt, 10);
+        double2str(f, s, fmt, 10);
     }
 
-    void float2str(float f, char * s) {
+    void double2str(double f, char * s) {
 
-        float2str(f, s, "%03d.%d");
+        double2str(f, s, "%03d.%d");
     }
 
     public:
@@ -265,7 +265,7 @@ class GPGGA_Message : public NMEA_Message {
         Coordinate longitude;
         int fixQuality;
         int numSatellites;
-        float hdop;
+        double hdop;
         Height altitude;
         Height geoid;
 
@@ -299,11 +299,11 @@ class GPGGA_Message : public NMEA_Message {
             char lonstr[20];
             coord2str(lon, lonstr, "%03d%02d.%5ld,%c", 'E', 'W');
             char hdopstr[10];
-            float2str(hdop, hdopstr, "%d.%02d", 100);
+            double2str(hdop, hdopstr, "%d.%02d", 100);
             char altstr[10];
-            float2str(this->altitude.value, altstr, "%d.%1d", 10);
+            double2str(this->altitude.value, altstr, "%d.%1d", 10);
             char geoidstr[10];
-            float2str(this->geoid.value, geoidstr, "%d.%1d", 10);
+            double2str(this->geoid.value, geoidstr, "%d.%1d", 10);
 
 
             char tmp[200];
@@ -343,9 +343,9 @@ class GPGSA_Message : public NMEA_Message {
         int satids[20];
         int nsats;
 
-        float pdop;
-        float hdop;
-        float vdop;
+        double pdop;
+        double hdop;
+        double vdop;
 
         GPGSA_Message(char * msg) : NMEA_Message(msg) {
 
@@ -404,10 +404,10 @@ class GPRMC_Message : public NMEA_Message {
         char warning;
         Coordinate latitude;
         Coordinate longitude;
-        float groundspeedKnots;
-        float trackAngle;
+        double groundspeedKnots;
+        double trackAngle;
         Date date;
-        float magvar;
+        double magvar;
 
         GPRMC_Message(char * msg) : NMEA_Message(msg) {
 
@@ -443,10 +443,10 @@ class GPRMC_Message : public NMEA_Message {
             char lonstr[20];
             coord2str(lon, lonstr, "%03d%02d.%5ld,%c", 'E', 'W');
             char speedstr[10];
-            float2str(this->groundspeedKnots, speedstr, "%d.%03d", 1000);
+            double2str(this->groundspeedKnots, speedstr, "%d.%03d", 1000);
             char anglestr[10] = "";
             if (this->trackAngle > 0)
-                float2str(this->trackAngle, anglestr, "%03d.%d");
+                double2str(this->trackAngle, anglestr, "%03d.%d");
             Date d = this->date;
 
             char tmp[200];
@@ -464,10 +464,10 @@ class GPVTG_Message : public NMEA_Message {
 
     public:
 
-        float trackMadeGoodTrue;
-        float trackMadeGoodMagnetic;
-        float speedKnots;
-        float speedKPH;
+        double trackMadeGoodTrue;
+        double trackMadeGoodMagnetic;
+        double speedKnots;
+        double speedKPH;
 
         GPVTG_Message(char * msg) : NMEA_Message(msg) {
 

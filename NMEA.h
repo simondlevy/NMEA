@@ -60,7 +60,7 @@ class Coordinate {
 
     public:
 
-        char  sign;
+        int  sign;
         int   degrees;
         float minutes;
 };
@@ -231,6 +231,12 @@ class NMEA_Message {
 
     public:
 
+    static void nmea2deg(Coordinate nmea, double & deg) {
+
+        //deg = nmea.sign * (nmea.degrees + nmea.minutes/60);
+        deg = nmea.degrees + nmea.minutes/60;
+    }
+
     char raw[200];
 
     private:
@@ -239,6 +245,7 @@ class NMEA_Message {
 
         return 10 * (p[k]-'0') + (p[k+1]-'0');
     }
+
 };
 
 

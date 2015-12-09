@@ -233,8 +233,15 @@ class NMEA_Message {
 
     static void nmea2deg(Coordinate nmea, double & deg) {
 
-        //deg = nmea.sign * (nmea.degrees + nmea.minutes/60);
-        deg = nmea.degrees + nmea.minutes/60;
+        deg = nmea.sign * (nmea.degrees + nmea.minutes/60);
+    }
+
+    static void deg2nmea(double deg, Coordinate * nmea) {
+
+        nmea->sign = deg < 0 ? -1 : +1;
+        double absdeg = fabs(deg);
+        nmea->degrees = absdeg;
+        nmea->minutes = (absdeg-nmea->degrees)*60;
     }
 
     char raw[200];
